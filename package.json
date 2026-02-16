@@ -1,6 +1,6 @@
 {
   "name": "apollo-io-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Apollo.io API - search people, enrich contacts, manage deals, sequences, and more",
   "type": "module",
   "bin": {
@@ -12,7 +12,14 @@
     "start": "node dist/index.js",
     "dev": "tsc --watch"
   },
-  "keywords": ["mcp", "apollo", "apollo.io", "sales", "enrichment", "crm"],
+  "keywords": [
+    "mcp",
+    "apollo",
+    "apollo.io",
+    "sales",
+    "enrichment",
+    "crm"
+  ],
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
@@ -22,7 +29,9 @@
     "typescript": "^5.7.0",
     "@types/node": "^22.0.0"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=18"
   }

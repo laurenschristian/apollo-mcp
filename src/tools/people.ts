@@ -13,7 +13,7 @@ export const searchPeopleSchema = z.object({
 });
 
 export async function searchPeople(args: z.infer<typeof searchPeopleSchema>) {
-  return apolloPost("/mixed_people/search", args);
+  return apolloPost("/mixed_people/api_search", args);
 }
 
 export const enrichPersonSchema = z.object({
