@@ -7,7 +7,8 @@ import { searchPeopleSchema, searchPeople, enrichPersonSchema, enrichPerson, bul
 import { searchCompaniesSchema, searchCompanies, enrichCompanySchema, enrichCompany, bulkEnrichCompaniesSchema, bulkEnrichCompanies, orgJobPostingsSchema, orgJobPostings } from "./tools/companies.js";
 import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact } from "./tools/contacts.js";
 import { searchAccountsSchema, searchAccounts, createAccountSchema, createAccount, updateAccountSchema, updateAccount, bulkCreateAccountsSchema, bulkCreateAccounts } from "./tools/accounts.js";
-import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails } from "./tools/sequences.js";
+import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails, removeFromSequenceSchema, removeFromSequence, sequenceStatsSchema, sequenceStats } from "./tools/sequences.js";
+import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
 import { listDealsSchema, listDeals, getDealSchema, getDeal, createDealSchema, createDeal, updateDealSchema, updateDeal } from "./tools/deals.js";
 import { searchTasksSchema, searchTasks, createTaskSchema, createTask, bulkCreateTasksSchema, bulkCreateTasks } from "./tools/tasks.js";
 import { searchCallsSchema, searchCalls, createCallSchema, createCall, updateCallSchema, updateCall } from "./tools/calls.js";
@@ -90,6 +91,40 @@ server.tool("add_to_sequence", "Add contacts to an email sequence.", addToSequen
 
 server.tool("search_emails", "Search emails sent from sequences.", searchEmailsSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await searchEmails(searchEmailsSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("remove_from_sequence", "Remove or stop contacts in an active sequence.", removeFromSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await removeFromSequence(removeFromSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("sequence_stats", "Get email stats (opens, replies, bounces) for a sequence.", sequenceStatsSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await sequenceStats(sequenceStatsSchema.parse(args)), null, 2) }],
+}));
+
+// Sequence Management (undocumented app API)
+server.tool("create_sequence", "Create a new email sequence.", createSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await createSequence(createSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("get_sequence", "Get full sequence details including steps and configuration.", getSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await getSequence(getSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("update_sequence", "Update a sequence: rename, activate/pause, or set email steps with delays.", updateSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await updateSequence(updateSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("delete_sequence", "Delete an email sequence.", deleteSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await deleteSequence(deleteSequenceSchema.parse(args)), null, 2) }],
+}));
+
+// Email Templates (undocumented app API)
+server.tool("list_email_templates", "List saved email templates.", listEmailTemplatesSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await listEmailTemplates(listEmailTemplatesSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("create_email_template", "Create a reusable email template.", createEmailTemplateSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await createEmailTemplate(createEmailTemplateSchema.parse(args)), null, 2) }],
 }));
 
 // Deals

@@ -1,4 +1,5 @@
 const BASE_URL = "https://api.apollo.io/api/v1";
+const APP_BASE_URL = "https://app.apollo.io/api/v1";
 
 function getApiKey(): string {
   const key = process.env.APOLLO_API_KEY;
@@ -108,3 +109,28 @@ export async function apolloPut(
   const data = await response.json();
   return stripBloat(data);
 }
+
+// App API (undocumented) - used for sequence/template creation
+async function appRequest(method: string, path: string, body?: Record<string, unknown>): Promise<unknown> {
+  const response = await fetch(`${APP_BASE_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": getApiKey(),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Apollo App API error (${response.status}): ${text}. Note: this uses an undocumented endpoint.`);
+  }
+
+  const data = await response.json();
+  return stripBloat(data);
+}
+
+export const apolloAppGet = (path: string) => appRequest("GET", path);
+export const apolloAppPost = (path: string, body?: Record<string, unknown>) => appRequest("POST", path, body);
+export const apolloAppPut = (path: string, body?: Record<string, unknown>) => appRequest("PUT", path, body);
+export const apolloAppDelete = (path: string) => appRequest("DELETE", path);

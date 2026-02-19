@@ -33,3 +33,28 @@ export const searchEmailsSchema = z.object({
 export async function searchEmails(args: z.infer<typeof searchEmailsSchema>) {
   return apolloPost("/emailer_campaigns/emails/search", args);
 }
+
+// Remove or stop contacts in a sequence
+export const removeFromSequenceSchema = z.object({
+  sequence_id: z.string().describe("Sequence ID"),
+  contact_ids: z.array(z.string()).describe("Contact IDs to remove or stop"),
+});
+
+export async function removeFromSequence(args: z.infer<typeof removeFromSequenceSchema>) {
+  return apolloPost("/emailer_campaigns/remove_or_stop_contact_ids", {
+    emailer_campaign_id: args.sequence_id,
+    contact_ids: args.contact_ids,
+  });
+}
+
+// Get sequence email stats
+export const sequenceStatsSchema = z.object({
+  sequence_id: z.string().describe("Sequence ID to get stats for"),
+});
+
+export async function sequenceStats(args: z.infer<typeof sequenceStatsSchema>) {
+  return apolloPost("/emailer_campaigns/emails/search", {
+    emailer_campaign_id: args.sequence_id,
+    per_page: 1,
+  });
+}
