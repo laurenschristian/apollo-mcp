@@ -130,3 +130,16 @@ export const createEmailTemplateSchema = z.object({
 export async function createEmailTemplate(args: z.infer<typeof createEmailTemplateSchema>) {
   return apolloAppPost("/emailer_templates", args);
 }
+
+// Update an existing email template
+export const updateEmailTemplateSchema = z.object({
+  template_id: z.string().describe("Email template ID to update. Use get_sequence to find template IDs in emailer_templates array."),
+  name: z.string().optional().describe("Template name"),
+  subject: z.string().optional().describe("Email subject line"),
+  body_html: z.string().optional().describe("Email body as HTML. Supports {{first_name}}, {{last_name}}, {{company}}, {{title}}, {{personalized_opener}} and other custom field variables."),
+});
+
+export async function updateEmailTemplate(args: z.infer<typeof updateEmailTemplateSchema>) {
+  const { template_id, ...body } = args;
+  return apolloV1Put(`/emailer_templates/${template_id}`, body);
+}

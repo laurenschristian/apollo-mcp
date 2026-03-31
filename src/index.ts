@@ -8,7 +8,7 @@ import { searchCompaniesSchema, searchCompanies, enrichCompanySchema, enrichComp
 import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact, listCustomFieldsSchema, listCustomFields, createCustomFieldSchema, createCustomField } from "./tools/contacts.js";
 import { searchAccountsSchema, searchAccounts, createAccountSchema, createAccount, updateAccountSchema, updateAccount, bulkCreateAccountsSchema, bulkCreateAccounts } from "./tools/accounts.js";
 import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails, removeFromSequenceSchema, removeFromSequence, sequenceStatsSchema, sequenceStats } from "./tools/sequences.js";
-import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, deleteStepSchema, deleteStep, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
+import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, deleteStepSchema, deleteStep, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate, updateEmailTemplateSchema, updateEmailTemplate } from "./tools/sequence-management.js";
 import { listDealsSchema, listDeals, getDealSchema, getDeal, createDealSchema, createDeal, updateDealSchema, updateDeal } from "./tools/deals.js";
 import { searchTasksSchema, searchTasks, createTaskSchema, createTask, bulkCreateTasksSchema, bulkCreateTasks } from "./tools/tasks.js";
 import { searchCallsSchema, searchCalls, createCallSchema, createCall, updateCallSchema, updateCall } from "./tools/calls.js";
@@ -141,6 +141,10 @@ server.tool("list_email_templates", "List saved email templates.", listEmailTemp
 
 server.tool("create_email_template", "Create a reusable email template.", createEmailTemplateSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await createEmailTemplate(createEmailTemplateSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("update_email_template", "Update an existing email template's subject, body, or name. Use to modify sequence step content without recreating steps.", updateEmailTemplateSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await updateEmailTemplate(updateEmailTemplateSchema.parse(args)), null, 2) }],
 }));
 
 // Deals
