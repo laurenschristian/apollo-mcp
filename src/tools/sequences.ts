@@ -17,11 +17,19 @@ export const addToSequenceSchema = z.object({
   sequence_id: z.string().describe("Sequence (emailer campaign) ID"),
   contact_ids: z.array(z.string()).describe("Contact IDs to add"),
   emailer_campaign_id: z.string().optional().describe("Alias for sequence_id (deprecated, use sequence_id)"),
+  send_email_from_email_account_id: z.string().optional().describe("Email account ID to send from. Required by Apollo."),
 });
 
 export async function addToSequence(args: z.infer<typeof addToSequenceSchema>) {
-  const { sequence_id, contact_ids } = args;
-  return apolloPost(`/emailer_campaigns/${sequence_id}/add_contact_ids`, { contact_ids });
+  const { sequence_id, contact_ids, send_email_from_email_account_id } = args;
+  const body: Record<string, unknown> = {
+    emailer_campaign_id: sequence_id,
+    contact_ids,
+  };
+  if (send_email_from_email_account_id) {
+    body.send_email_from_email_account_id = send_email_from_email_account_id;
+  }
+  return apolloPost(`/emailer_campaigns/${sequence_id}/add_contact_ids`, body);
 }
 
 export const searchEmailsSchema = z.object({
@@ -38,12 +46,14 @@ export async function searchEmails(args: z.infer<typeof searchEmailsSchema>) {
 export const removeFromSequenceSchema = z.object({
   sequence_id: z.string().describe("Sequence ID"),
   contact_ids: z.array(z.string()).describe("Contact IDs to remove or stop"),
+  mode: z.enum(["remove", "stop"]).default("remove").describe("'remove' to fully remove contacts, 'stop' to mark as finished"),
 });
 
 export async function removeFromSequence(args: z.infer<typeof removeFromSequenceSchema>) {
   return apolloPost("/emailer_campaigns/remove_or_stop_contact_ids", {
-    emailer_campaign_id: args.sequence_id,
+    emailer_campaign_ids: [args.sequence_id],
     contact_ids: args.contact_ids,
+    mode: args.mode,
   });
 }
 

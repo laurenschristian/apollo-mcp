@@ -5,10 +5,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { searchPeopleSchema, searchPeople, enrichPersonSchema, enrichPerson, bulkEnrichPeopleSchema, bulkEnrichPeople } from "./tools/people.js";
 import { searchCompaniesSchema, searchCompanies, enrichCompanySchema, enrichCompany, bulkEnrichCompaniesSchema, bulkEnrichCompanies, orgJobPostingsSchema, orgJobPostings } from "./tools/companies.js";
-import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact } from "./tools/contacts.js";
+import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact, listCustomFieldsSchema, listCustomFields, createCustomFieldSchema, createCustomField } from "./tools/contacts.js";
 import { searchAccountsSchema, searchAccounts, createAccountSchema, createAccount, updateAccountSchema, updateAccount, bulkCreateAccountsSchema, bulkCreateAccounts } from "./tools/accounts.js";
 import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails, removeFromSequenceSchema, removeFromSequence, sequenceStatsSchema, sequenceStats } from "./tools/sequences.js";
-import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
+import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
 import { listDealsSchema, listDeals, getDealSchema, getDeal, createDealSchema, createDeal, updateDealSchema, updateDeal } from "./tools/deals.js";
 import { searchTasksSchema, searchTasks, createTaskSchema, createTask, bulkCreateTasksSchema, bulkCreateTasks } from "./tools/tasks.js";
 import { searchCallsSchema, searchCalls, createCallSchema, createCall, updateCallSchema, updateCall } from "./tools/calls.js";
@@ -59,8 +59,16 @@ server.tool("create_contact", "Create a new contact in your Apollo CRM.", create
   content: [{ type: "text", text: JSON.stringify(await createContact(createContactSchema.parse(args)), null, 2) }],
 }));
 
-server.tool("update_contact", "Update an existing contact in your Apollo CRM.", updateContactSchema.shape, async (args) => ({
+server.tool("update_contact", "Update an existing contact in your Apollo CRM. Supports custom fields via typed_custom_fields.", updateContactSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await updateContact(updateContactSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("list_custom_fields", "List all custom fields in your Apollo account. Returns field IDs needed for typed_custom_fields.", listCustomFieldsSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await listCustomFields(listCustomFieldsSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("create_custom_field", "Create a new custom field on contacts, accounts, or deals. Use 'textarea' type for personalized openers.", createCustomFieldSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await createCustomField(createCustomFieldSchema.parse(args)), null, 2) }],
 }));
 
 // Accounts
@@ -93,7 +101,7 @@ server.tool("search_emails", "Search emails sent from sequences.", searchEmailsS
   content: [{ type: "text", text: JSON.stringify(await searchEmails(searchEmailsSchema.parse(args)), null, 2) }],
 }));
 
-server.tool("remove_from_sequence", "Remove or stop contacts in an active sequence.", removeFromSequenceSchema.shape, async (args) => ({
+server.tool("remove_from_sequence", "Remove or stop contacts in a sequence (works on active, paused, and archived sequences).", removeFromSequenceSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await removeFromSequence(removeFromSequenceSchema.parse(args)), null, 2) }],
 }));
 
@@ -114,8 +122,12 @@ server.tool("update_sequence", "Update a sequence: rename, activate/pause, or se
   content: [{ type: "text", text: JSON.stringify(await updateSequence(updateSequenceSchema.parse(args)), null, 2) }],
 }));
 
-server.tool("delete_sequence", "Delete an email sequence.", deleteSequenceSchema.shape, async (args) => ({
+server.tool("delete_sequence", "Archive an email sequence. Apollo does not support true deletion via API.", deleteSequenceSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await deleteSequence(deleteSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("unarchive_sequence", "Unarchive a previously archived email sequence.", unarchiveSequenceSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await unarchiveSequence(unarchiveSequenceSchema.parse(args)), null, 2) }],
 }));
 
 // Email Templates (undocumented app API)

@@ -110,6 +110,28 @@ export async function apolloPut(
   return stripBloat(data);
 }
 
+export async function apolloPatch(
+  path: string,
+  body: Record<string, unknown> = {}
+): Promise<unknown> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": getApiKey(),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Apollo API error (${response.status}): ${text}`);
+  }
+
+  const data = await response.json();
+  return stripBloat(data);
+}
+
 // App API (undocumented) - used for sequence/template creation
 async function appRequest(method: string, path: string, body?: Record<string, unknown>): Promise<unknown> {
   const response = await fetch(`${APP_BASE_URL}${path}`, {
@@ -134,3 +156,30 @@ export const apolloAppGet = (path: string) => appRequest("GET", path);
 export const apolloAppPost = (path: string, body?: Record<string, unknown>) => appRequest("POST", path, body);
 export const apolloAppPut = (path: string, body?: Record<string, unknown>) => appRequest("PUT", path, body);
 export const apolloAppDelete = (path: string) => appRequest("DELETE", path);
+
+// V1 API (api.apollo.io/v1) - used for emailer_steps and emailer_templates
+const V1_BASE_URL = "https://api.apollo.io/v1";
+
+async function v1Request(method: string, path: string, body?: Record<string, unknown>): Promise<unknown> {
+  const response = await fetch(`${V1_BASE_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": getApiKey(),
+      "User-Agent": "apollo-mcp/1.0",
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Apollo V1 API error (${response.status}): ${text}`);
+  }
+
+  const data = await response.json();
+  return stripBloat(data);
+}
+
+export const apolloV1Post = (path: string, body?: Record<string, unknown>) => v1Request("POST", path, body);
+export const apolloV1Put = (path: string, body?: Record<string, unknown>) => v1Request("PUT", path, body);
+export const apolloV1Delete = (path: string) => v1Request("DELETE", path);

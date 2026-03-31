@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apolloAppPost, apolloAppPut, apolloAppGet, apolloAppDelete } from "../client.js";
+import { apolloAppPost, apolloAppPut, apolloAppGet, apolloAppDelete, apolloV1Post, apolloV1Put, apolloV1Delete } from "../client.js";
 
 // Create a new sequence
 export const createSequenceSchema = z.object({
@@ -40,40 +40,54 @@ export const updateSequenceSchema = z.object({
 
 export async function updateSequence(args: z.infer<typeof updateSequenceSchema>) {
   const { sequence_id, steps, ...rest } = args;
-  const body: Record<string, unknown> = { ...rest };
 
-  if (steps) {
-    body.emailer_steps = steps.map((step) => ({
-      type: "auto_email",
-      wait_time: step.wait_time,
-      wait_mode: step.wait_mode,
-      priority: "medium",
-      position: step.position,
-      emailer_touches: [
-        {
-          type: step.position === 1 ? "new_thread" : "reply_thread",
-          status: "active",
-          include_signature: true,
-          template_type: "emailer_template",
-          emailer_template: {
-            subject: step.subject,
-            body_html: step.body_html,
-          },
-        },
-      ],
-    }));
+  // Update campaign metadata (name, active) if provided
+  if (Object.keys(rest).length > 0) {
+    await apolloAppPut(`/emailer_campaigns/${sequence_id}`, rest);
   }
 
-  return apolloAppPut(`/emailer_campaigns/${sequence_id}`, body);
+  // Add steps individually: create step via v1 API, then update template with content
+  if (steps) {
+    for (const step of steps) {
+      const result = await apolloV1Post("/emailer_steps", {
+        emailer_campaign_id: sequence_id,
+        type: "auto_email",
+        wait_time: step.wait_time,
+        wait_mode: step.wait_mode,
+        priority: "medium",
+        position: step.position,
+      }) as { emailer_touch?: { emailer_template_id?: string } };
+
+      const templateId = result.emailer_touch?.emailer_template_id;
+      if (templateId) {
+        await apolloV1Put(`/emailer_templates/${templateId}`, {
+          subject: step.subject,
+          body_html: step.body_html,
+        });
+      }
+    }
+  }
+
+  // Return the updated sequence
+  return apolloAppGet(`/emailer_campaigns/${sequence_id}`);
 }
 
-// Delete a sequence
+// Archive a sequence (Apollo does not support true deletion via API)
 export const deleteSequenceSchema = z.object({
-  sequence_id: z.string().describe("Sequence ID to delete"),
+  sequence_id: z.string().describe("Sequence ID to archive"),
 });
 
 export async function deleteSequence(args: z.infer<typeof deleteSequenceSchema>) {
-  return apolloAppDelete(`/emailer_campaigns/${args.sequence_id}`);
+  return apolloAppPut(`/emailer_campaigns/${args.sequence_id}`, { archived: true });
+}
+
+// Unarchive a sequence
+export const unarchiveSequenceSchema = z.object({
+  sequence_id: z.string().describe("Sequence ID to unarchive"),
+});
+
+export async function unarchiveSequence(args: z.infer<typeof unarchiveSequenceSchema>) {
+  return apolloAppPut(`/emailer_campaigns/${args.sequence_id}`, { archived: false });
 }
 
 // List email templates
