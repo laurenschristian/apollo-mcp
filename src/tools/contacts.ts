@@ -68,3 +68,33 @@ export const createCustomFieldSchema = z.object({
 export async function createCustomField(args: z.infer<typeof createCustomFieldSchema>) {
   return apolloPost("/fields", args);
 }
+
+// List all contact lists/labels
+export const listLabelsSchema = z.object({});
+
+export async function listLabels() {
+  return apolloGet("/labels");
+}
+
+// List account stages (pipeline stages for accounts)
+export const listAccountStagesSchema = z.object({});
+
+export async function listAccountStages() {
+  return apolloGet("/account_stages");
+}
+
+// List contact stages (lifecycle stages for contacts)
+export const listContactStagesSchema = z.object({});
+
+export async function listContactStages() {
+  return apolloGet("/contact_stages");
+}
+
+// Get a single contact by ID
+export const getContactSchema = z.object({
+  contact_id: z.string().describe("Apollo contact ID"),
+});
+
+export async function getContact(args: z.infer<typeof getContactSchema>) {
+  return apolloGet(`/contacts/${args.contact_id}`);
+}

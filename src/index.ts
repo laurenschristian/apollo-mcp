@@ -5,7 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { searchPeopleSchema, searchPeople, enrichPersonSchema, enrichPerson, bulkEnrichPeopleSchema, bulkEnrichPeople } from "./tools/people.js";
 import { searchCompaniesSchema, searchCompanies, enrichCompanySchema, enrichCompany, bulkEnrichCompaniesSchema, bulkEnrichCompanies, orgJobPostingsSchema, orgJobPostings } from "./tools/companies.js";
-import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact, listCustomFieldsSchema, listCustomFields, createCustomFieldSchema, createCustomField } from "./tools/contacts.js";
+import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact, listCustomFieldsSchema, listCustomFields, createCustomFieldSchema, createCustomField, listLabelsSchema, listLabels, listAccountStagesSchema, listAccountStages, listContactStagesSchema, listContactStages, getContactSchema, getContact } from "./tools/contacts.js";
 import { searchAccountsSchema, searchAccounts, createAccountSchema, createAccount, updateAccountSchema, updateAccount, bulkCreateAccountsSchema, bulkCreateAccounts } from "./tools/accounts.js";
 import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails, removeFromSequenceSchema, removeFromSequence, sequenceStatsSchema, sequenceStats } from "./tools/sequences.js";
 import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, deleteStepSchema, deleteStep, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate, updateEmailTemplateSchema, updateEmailTemplate } from "./tools/sequence-management.js";
@@ -69,6 +69,22 @@ server.tool("list_custom_fields", "List all custom fields in your Apollo account
 
 server.tool("create_custom_field", "Create a new custom field on contacts, accounts, or deals. Use 'textarea' type for personalized openers.", createCustomFieldSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await createCustomField(createCustomFieldSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("get_contact", "Get a single contact by ID. Returns full contact details including email, custom fields, and sequence status.", getContactSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await getContact(getContactSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("list_labels", "List all contact lists/labels in your Apollo account.", listLabelsSchema.shape, async () => ({
+  content: [{ type: "text", text: JSON.stringify(await listLabels(), null, 2) }],
+}));
+
+server.tool("list_account_stages", "List account pipeline stages (Cold, Current Client, Active Opportunity, etc).", listAccountStagesSchema.shape, async () => ({
+  content: [{ type: "text", text: JSON.stringify(await listAccountStages(), null, 2) }],
+}));
+
+server.tool("list_contact_stages", "List contact lifecycle stages (Cold, Approaching, Replied, Interested, etc).", listContactStagesSchema.shape, async () => ({
+  content: [{ type: "text", text: JSON.stringify(await listContactStages(), null, 2) }],
 }));
 
 // Accounts
