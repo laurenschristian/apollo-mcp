@@ -35,15 +35,26 @@ export const updateSequenceSchema = z.object({
   sequence_id: z.string().describe("Sequence ID to update"),
   name: z.string().optional().describe("New name for the sequence"),
   active: z.boolean().optional().describe("Activate or pause the sequence"),
-  steps: z.array(emailStepSchema).optional().describe("Email steps to set on the sequence"),
+  steps: z.array(emailStepSchema).optional().describe("Email steps to set on the sequence. By default APPENDS to existing steps. Set replace_steps=true to delete existing steps first."),
+  replace_steps: z.boolean().optional().default(false).describe("If true, delete all existing steps before adding new ones. If false (default), append new steps."),
 });
 
 export async function updateSequence(args: z.infer<typeof updateSequenceSchema>) {
-  const { sequence_id, steps, ...rest } = args;
+  const { sequence_id, steps, replace_steps, ...rest } = args;
 
   // Update campaign metadata (name, active) if provided
   if (Object.keys(rest).length > 0) {
     await apolloAppPut(`/emailer_campaigns/${sequence_id}`, rest);
+  }
+
+  // If replacing steps, delete all existing ones first
+  if (steps && replace_steps) {
+    const existing = await apolloAppGet(`/emailer_campaigns/${sequence_id}`) as { emailer_steps?: Array<{ id: string }> };
+    if (existing.emailer_steps) {
+      for (const step of existing.emailer_steps) {
+        await apolloV1Delete(`/emailer_steps/${step.id}`);
+      }
+    }
   }
 
   // Add steps individually: create step via v1 API, then update template with content
@@ -70,6 +81,15 @@ export async function updateSequence(args: z.infer<typeof updateSequenceSchema>)
 
   // Return the updated sequence
   return apolloAppGet(`/emailer_campaigns/${sequence_id}`);
+}
+
+// Delete a sequence step (undocumented but working endpoint)
+export const deleteStepSchema = z.object({
+  step_id: z.string().describe("Emailer step ID to delete"),
+});
+
+export async function deleteStep(args: z.infer<typeof deleteStepSchema>) {
+  return apolloV1Delete(`/emailer_steps/${args.step_id}`);
 }
 
 // Archive a sequence (Apollo does not support true deletion via API)

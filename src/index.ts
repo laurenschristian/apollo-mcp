@@ -8,7 +8,7 @@ import { searchCompaniesSchema, searchCompanies, enrichCompanySchema, enrichComp
 import { searchContactsSchema, searchContacts, createContactSchema, createContact, updateContactSchema, updateContact, listCustomFieldsSchema, listCustomFields, createCustomFieldSchema, createCustomField } from "./tools/contacts.js";
 import { searchAccountsSchema, searchAccounts, createAccountSchema, createAccount, updateAccountSchema, updateAccount, bulkCreateAccountsSchema, bulkCreateAccounts } from "./tools/accounts.js";
 import { searchSequencesSchema, searchSequences, addToSequenceSchema, addToSequence, searchEmailsSchema, searchEmails, removeFromSequenceSchema, removeFromSequence, sequenceStatsSchema, sequenceStats } from "./tools/sequences.js";
-import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
+import { createSequenceSchema, createSequence, getSequenceSchema, getSequence, updateSequenceSchema, updateSequence, deleteSequenceSchema, deleteSequence, unarchiveSequenceSchema, unarchiveSequence, deleteStepSchema, deleteStep, listEmailTemplatesSchema, listEmailTemplates, createEmailTemplateSchema, createEmailTemplate } from "./tools/sequence-management.js";
 import { listDealsSchema, listDeals, getDealSchema, getDeal, createDealSchema, createDeal, updateDealSchema, updateDeal } from "./tools/deals.js";
 import { searchTasksSchema, searchTasks, createTaskSchema, createTask, bulkCreateTasksSchema, bulkCreateTasks } from "./tools/tasks.js";
 import { searchCallsSchema, searchCalls, createCallSchema, createCall, updateCallSchema, updateCall } from "./tools/calls.js";
@@ -118,8 +118,12 @@ server.tool("get_sequence", "Get full sequence details including steps and confi
   content: [{ type: "text", text: JSON.stringify(await getSequence(getSequenceSchema.parse(args)), null, 2) }],
 }));
 
-server.tool("update_sequence", "Update a sequence: rename, activate/pause, or set email steps with delays.", updateSequenceSchema.shape, async (args) => ({
+server.tool("update_sequence", "Update a sequence: rename, activate/pause, or set email steps with delays. Use replace_steps=true to replace all steps instead of appending.", updateSequenceSchema.shape, async (args) => ({
   content: [{ type: "text", text: JSON.stringify(await updateSequence(updateSequenceSchema.parse(args)), null, 2) }],
+}));
+
+server.tool("delete_step", "Delete a single step from a sequence. Use get_sequence to find step IDs first.", deleteStepSchema.shape, async (args) => ({
+  content: [{ type: "text", text: JSON.stringify(await deleteStep(deleteStepSchema.parse(args)), null, 2) }],
 }));
 
 server.tool("delete_sequence", "Archive an email sequence. Apollo does not support true deletion via API.", deleteSequenceSchema.shape, async (args) => ({
